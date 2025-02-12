@@ -8,7 +8,7 @@ plugins {
 }
 
 version = "0.1"
-group = "com.piyal"
+group = "com.erudman"
 
 repositories {
     mavenCentral()
