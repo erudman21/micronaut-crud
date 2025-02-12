@@ -40,3 +40,9 @@ jobs:
 
       - name: Test
         run: ./gradlew test
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-jar
+          path: build/libs/*.jar
