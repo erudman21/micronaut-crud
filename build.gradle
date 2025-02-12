@@ -5,6 +5,7 @@ plugins {
     id("io.micronaut.aot") version "4.4.2"
     id("maven-publish")
     id("signing")
+    id('org.jreleaser') version '1.9.0'
 }
 
 version = "0.1"
@@ -74,52 +75,83 @@ tasks.named("dockerfileNative") {
     jdkVersion = "21"
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from(components["java"])
+//publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            from(components["java"])
+//
+//            pom {
+//                name.set("Assignment 6")
+//                description.set("Assignment 6")
+//                url.set("https://github.com/erudman21/micronaut-crud.git")
+//                licenses {
+//                    license {
+//                        name.set("The Apache License, Version 2.0")
+//                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+//                    }
+//                }
+//                developers {
+//                    developer {
+//                        id.set("erudman21")
+//                        name.set("Eli Rudman")
+//                    }
+//                }
+//                scm {
+//                    connection.set("scm:git:git://github.com/erudman21/micronaut-crud.git")
+//                    developerConnection.set("scm:git:ssh://github.com/erudman21/micronaut-crud.git")
+//                    url.set("https://github.com/erudman21/micronaut-crud.git")
+//                }
+//            }
+//        }
+//    }
+//    repositories {
+//        maven {
+//            url = layout.buildDirectory.dir('staging-deploy')
+//        }
+//    }
+//}
 
-            pom {
-                name.set("Assignment 6")
-                description.set("Assignment 6")
-                url.set("https://github.com/erudman21/micronaut-crud.git")
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("erudman21")
-                        name.set("Eli Rudman")
-                        email.set("erudman21@gmail.com")
-                    }
-                }
-                scm {
-                    connection.set("scm:git:git://github.com/erudman21/micronaut-crud.git")
-                    developerConnection.set("scm:git:ssh://github.com/erudman21/micronaut-crud.git")
-                    url.set("https://github.com/erudman21/micronaut-crud.git")
-                }
+jreleaser {
+    project {
+        name = "Assignment 6"
+        version = project.version.toString()
+        description = "Assignment 6"
+        website = "https://github.com/erudman21/micronaut-crud"
+        license = "Apache-2.0"
+    }
+    release {
+        scm {
+            tagName = project.version.toString()
+        }
+        github {
+            owner = "erudman21"
+            repository = "micronaut-crud"
+        }
+    }
+    packagers {
+        maven {
+            active = true
+            stagingRepository = "ossrh"
+            artifacts {
+                // Ensure the path matches your built JAR; adjust as necessary.
+                artifact("build/libs/micronaut-crud-${project.version}.jar")
             }
         }
     }
-    repositories {
-        maven {
-            name = "OSSRH"
-            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
+    publishers {
+        mavenCentral {
+            active = true
+            ossrh {
                 username = System.getenv("OSSRH_USERNAME")
                 password = System.getenv("OSSRH_PASSWORD")
             }
         }
     }
-}
-
-signing {
-    useInMemoryPgpKeys(
-            System.getenv("SIGNING_KEY"),
-            System.getenv("SIGNING_PASSWORD")
-    )
-    sign(publishing.publications["mavenJava"])
+    signing {
+        active = true
+        mode = "in-memory"
+        armoured = true
+        secretKey = System.getenv("SIGNING_KEY")
+        password = System.getenv("SIGNING_PASSWORD")
+    }
 }
