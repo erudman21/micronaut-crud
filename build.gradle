@@ -3,6 +3,8 @@ plugins {
     id("io.micronaut.application") version "4.4.2"
     id("io.micronaut.test-resources") version "4.4.2"
     id("io.micronaut.aot") version "4.4.2"
+    id("maven-publish")
+    id("signing")
 }
 
 version = "0.1"
@@ -72,5 +74,52 @@ tasks.named("dockerfileNative") {
     jdkVersion = "21"
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from(components["java"])
 
+            pom {
+                name.set("Assignment 6")
+                description.set("Assignment 6")
+                url.set("https://github.com/erudman21/micronaut-crud.git")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("erudman21")
+                        name.set("Eli Rudman")
+                        email.set("erudman21@gmail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/erudman21/micronaut-crud.git")
+                    developerConnection.set("scm:git:ssh://github.com/erudman21/micronaut-crud.git")
+                    url.set("https://github.com/erudman21/micronaut-crud.git")
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                System.getenv("OSSRH_USERNAME")
+                System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
 
+signing {
+    useInMemoryPgpKeys(
+            System.getenv("SIGNING_KEY"),
+            System.getenv("SIGNING_PASSWORD")
+    )
+    sign(publishing.publications["mavenJava"])
+}
